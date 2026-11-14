@@ -1,0 +1,199 @@
+{
+  "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+  "spacing": 6,
+  "timerIntervalMs": 8,
+  "samples": [
+    {
+      "lightenPercent": 0,
+      "pair": 1,
+      "thread": "main",
+      "elapsedMs": 173.70000004768372,
+      "maxTimerDelayMs": 12.100000023841858,
+      "lines": 402
+    },
+    {
+      "lightenPercent": 0,
+      "pair": 1,
+      "thread": "worker",
+      "elapsedMs": 190.29999995231628,
+      "maxTimerDelayMs": 1.199999988079071,
+      "lines": 402
+    },
+    {
+      "lightenPercent": 0,
+      "pair": 2,
+      "thread": "worker",
+      "elapsedMs": 179.89999997615814,
+      "maxTimerDelayMs": 1.199999988079071,
+      "lines": 402
+    },
+    {
+      "lightenPercent": 0,
+      "pair": 2,
+      "thread": "main",
+      "elapsedMs": 173.30000001192093,
+      "maxTimerDelayMs": 9.199999988079071,
+      "lines": 402
+    },
+    {
+      "lightenPercent": 0,
+      "pair": 3,
+      "thread": "main",
+      "elapsedMs": 199,
+      "maxTimerDelayMs": 6.300000011920929,
+      "lines": 402
+    },
+    {
+      "lightenPercent": 0,
+      "pair": 3,
+      "thread": "worker",
+      "elapsedMs": 180.19999998807907,
+      "maxTimerDelayMs": 2,
+      "lines": 402
+    },
+    {
+      "lightenPercent": 0,
+      "pair": 4,
+      "thread": "worker",
+      "elapsedMs": 179.80000001192093,
+      "maxTimerDelayMs": 1.100000023841858,
+      "lines": 402
+    },
+    {
+      "lightenPercent": 0,
+      "pair": 4,
+      "thread": "main",
+      "elapsedMs": 173.30000001192093,
+      "maxTimerDelayMs": 9.5,
+      "lines": 402
+    },
+    {
+      "lightenPercent": 0,
+      "pair": 5,
+      "thread": "main",
+      "elapsedMs": 202.4000000357628,
+      "maxTimerDelayMs": 6.5,
+      "lines": 402
+    },
+    {
+      "lightenPercent": 0,
+      "pair": 5,
+      "thread": "worker",
+      "elapsedMs": 179.39999997615814,
+      "maxTimerDelayMs": 1.0999999642372131,
+      "lines": 402
+    },
+    {
+      "lightenPercent": 0,
+      "pair": 6,
+      "thread": "worker",
+      "elapsedMs": 184.79999995231628,
+      "maxTimerDelayMs": 1.100000023841858,
+      "lines": 402
+    },
+    {
+      "lightenPercent": 0,
+      "pair": 6,
+      "thread": "main",
+      "elapsedMs": 172.10000002384186,
+      "maxTimerDelayMs": 10.100000023841858,
+      "lines": 402
+    },
+    {
+      "lightenPercent": 40,
+      "pair": 1,
+      "thread": "main",
+      "elapsedMs": 160.5999999642372,
+      "maxTimerDelayMs": 12.399999976158142,
+      "lines": 349
+    },
+    {
+      "lightenPercent": 40,
+      "pair": 1,
+      "thread": "worker",
+      "elapsedMs": 177.80000001192093,
+      "maxTimerDelayMs": 1.199999988079071,
+      "lines": 349
+    },
+    {
+      "lightenPercent": 40,
+      "pair": 2,
+      "thread": "worker",
+      "elapsedMs": 166,
+      "maxTimerDelayMs": 1.9000000357627869,
+      "lines": 349
+    },
+    {
+      "lightenPercent": 40,
+      "pair": 2,
+      "thread": "main",
+      "elapsedMs": 159.30000001192093,
+      "maxTimerDelayMs": 11.300000011920929,
+      "lines": 349
+    },
+    {
+      "lightenPercent": 40,
+      "pair": 3,
+      "thread": "main",
+      "elapsedMs": 190.39999997615814,
+      "maxTimerDelayMs": 6,
+      "lines": 349
+    },
+    {
+      "lightenPercent": 40,
+      "pair": 3,
+      "thread": "worker",
+      "elapsedMs": 166.5999999642372,
+      "maxTimerDelayMs": 1.100000023841858,
+      "lines": 349
+    },
+    {
+      "lightenPercent": 40,
+      "pair": 4,
+      "thread": "worker",
+      "elapsedMs": 165.60000002384186,
+      "maxTimerDelayMs": 1.600000023841858,
+      "lines": 349
+    },
+    {
+      "lightenPercent": 40,
+      "pair": 4,
+      "thread": "main",
+      "elapsedMs": 160.5,
+      "maxTimerDelayMs": 10.699999988079071,
+      "lines": 349
+    },
+    {
+      "lightenPercent": 40,
+      "pair": 5,
+      "thread": "main",
+      "elapsedMs": 190.30000001192093,
+      "maxTimerDelayMs": 5.099999964237213,
+      "lines": 349
+    },
+    {
+      "lightenPercent": 40,
+      "pair": 5,
+      "thread": "worker",
+      "elapsedMs": 163,
+      "maxTimerDelayMs": 1.2999999523162842,
+      "lines": 349
+    },
+    {
+      "lightenPercent": 40,
+      "pair": 6,
+      "thread": "worker",
+      "elapsedMs": 172,
+      "maxTimerDelayMs": 1.5,
+      "lines": 349
+    },
+    {
+      "lightenPercent": 40,
+      "pair": 6,
+      "thread": "main",
+      "elapsedMs": 160.30000001192093,
+      "maxTimerDelayMs": 11.099999964237213,
+      "lines": 349
+    }
+  ]
+}

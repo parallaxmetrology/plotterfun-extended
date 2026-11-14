@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Info, Monitor, Moon, Sun, X } from 'lucide-react';
 import { usePlotterStore } from './store.js';
 import { usePlotterController } from './usePlotterController.js';
 import OutputSizeControls from './components/OutputSizeControls.jsx';
 import CustomPaletteList from './components/CustomPaletteList.jsx';
+import { BrushPath, useBrushSearch } from './components/BrushPath.jsx';
+import NotanMassEditor from './components/NotanMassEditor.jsx';
 import AlgoControls from './components/AlgoControls.jsx';
 import { applyTheme, watchSystemTheme, THEME_STORAGE_KEY } from './theme.js';
 
@@ -38,6 +40,7 @@ const ALGORITHMS = [
   { value: 'hatchburst.js', label: 'Hatch Burst' },
   { value: 'hatchlattice.js', label: 'Hatch Lattice' },
   { value: 'flowfield.js', label: 'Flow Field' },
+  { value: 'notan.js', label: 'Notan drainage' },
   { value: 'concentric.js', label: 'Concentric' },
   { value: 'hexgrid.js', label: 'Hex Grid' },
   { value: 'starburst.js', label: 'Starburst' },
@@ -91,6 +94,7 @@ export default function App() {
     handleSelectImage,
     handleFileInputChange,
     handleUseImage,
+    loadNotanExample, getNotanImage, notanMap, notanEdit, originalDrawing, changeNotanEdit, notanPending,
     handleSnapshot,
     handleToggleVideoPause,
     handleCanvasSizeChange,
@@ -126,6 +130,50 @@ export default function App() {
     colorMode === 'cmyk' || (colorMode === 'plotterfun-color' && plotterfunColorMode === 'cmyk');
   const enableDistancePower = colorMode === 'custom' && colorMethod === 'match';
   const isMono = colorMode === 'mono';
+  const compareNotan = algorithm === 'notan.js' && isMono;
+
+  const [brushOpen,setBrushOpen] = useState(new URLSearchParams(window.location.search).get('tool') === 'brush');
+  const brushMode = compareNotan && brushOpen;
+  const spacing = Number(config['Notan spacing']) || 6;
+  const searchContext = JSON.stringify([brushMode,notanMap?.revision,spacing,notanEdit.amounts]);
+  const [keptStroke,setKeptStroke] = useState(null);
+  const protectedStroke = keptStroke?.revision === notanMap?.revision &&
+    keptStroke?.amounts === notanEdit.amounts ? keptStroke : null;
+  const brush = useBrushSearch(searchContext + Boolean(protectedStroke),getNotanImage);
+  const hasPreview = brushMode && brush.result?.type === 'preview';
+
+  const loadedBrushExample = useRef(false);
+  useEffect(() => {
+    const sample = new URLSearchParams(window.location.search).get('sample');
+    const portfolioSample = compareNotan && window.location.pathname === '/notan-drainage/' && !sample;
+    if (!loadedBrushExample.current && (portfolioSample || (brushMode && sample === 'sunflower'))) {
+      loadedBrushExample.current = true;
+      loadNotanExample('sunflower');
+    }
+  }, [brushMode, compareNotan, loadNotanExample]);
+
+  // Replay the demonstrated stroke only on the explicit sunflower comparison link.
+  const demoStep = useRef('waiting');
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get('compare') !== 'pair' || query.get('sample') !== 'sunflower' ||
+        !brushMode || !originalDrawing || notanPending || notanMap?.w !== 215 || notanMap.h !== 285) return;
+    if (demoStep.current === 'waiting' && !brush.result && !Object.keys(notanEdit.amounts).length) {
+      demoStep.current = 'single';
+      const points = [[.58*notanMap.w,.67*notanMap.h],[.27*notanMap.w,.15*notanMap.h]];
+      brush.search(points,notanEdit.amounts,spacing);
+    } else if (demoStep.current === 'single' && brush.result?.single && !brush.result.compared) {
+      demoStep.current = 'done';
+      brush.search(brush.result.points,notanEdit.amounts,spacing,brush.result);
+    }
+  }, [brush,brushMode,notanMap,notanEdit.amounts,notanPending,originalDrawing,spacing]);
+
+  function openBrush() {
+    setBrushOpen(true);
+    if (algorithm !== 'notan.js') handleAlgorithmChange('notan.js');
+    if (!isMono) handleColorModeChange('mono');
+    handleUseImage();
+  }
 
   useEffect(() => {
     applyTheme(themeMode);
@@ -339,6 +387,7 @@ export default function App() {
           </div>
 
           <div className="sidebar-scroll">
+            {compareNotan && <NotanMassEditor map={notanMap} edit={notanEdit} onChange={changeNotanEdit} onExample={loadNotanExample} brushOpen={brushOpen} onBrush={()=>setBrushOpen(v=>!v)} />}
             <div
               id="imgselect"
               ref={imgSelectRef}
@@ -393,6 +442,7 @@ export default function App() {
                   Use image
                 </button>
               </div>
+              {!compareNotan && <button className="ghost-button" type="button" onClick={openBrush}>Brush a path on this image</button>}
               <input
                 ref={fileInputRef}
                 type="file"
@@ -469,6 +519,7 @@ export default function App() {
                   <select
                     className="select-input"
                     id="colorMethod"
+                    disabled={colorMode !== 'custom'}
                     value={colorMethod}
                     onChange={(event) => handleColorMethodChange(event.target.value)}
                   >
@@ -516,6 +567,7 @@ export default function App() {
                       <input
                         className="range-input"
                         id="distancePower"
+                        aria-describedby="distancePowerHelp"
                         type="range"
                         min="0.5"
                         max="6"
@@ -527,6 +579,7 @@ export default function App() {
                       <input
                         className="number-input small"
                         id="distancePowerValue"
+                        aria-describedby="distancePowerHelp"
                         type="number"
                         min="0.5"
                         max="6"
@@ -537,6 +590,9 @@ export default function App() {
                       />
                     </div>
                   </label>
+                  <p id="distancePowerHelp" className="color-help">{enableDistancePower
+                    ? 'Higher values use less ink where the source color is farther from the nearest pen color.'
+                    : 'Choose Custom output and Colour match to enable Distance power.'}</p>
                   <label className="control-group">
                     <div className="control-header">
                       <span className="control-label">Ink gamma</span>
@@ -595,7 +651,7 @@ export default function App() {
             <section className="panel">
               <div className="panel-title">Parameters</div>
               <AlgoControls
-                controls={algoControls}
+                controls={compareNotan ? algoControls.filter(c => c.label !== 'Lighten strongest dark mass') : algoControls}
                 config={config}
                 onChange={handleAlgoControlChange}
                 onFaceBoundaryCrop={handleApplyFaceBoundaryCrop}
@@ -605,25 +661,53 @@ export default function App() {
           </div>
 
           <div className="sidebar-footer">
-            <button className="primary-button" type="button" onClick={handleDownload}>
-              Download SVG
+            <button className="primary-button" type="button" onClick={handleDownload} disabled={compareNotan && (!originalDrawing || notanPending || hasPreview)}>
+              {compareNotan ? 'Download edited SVG' : 'Download SVG'}
             </button>
             <div className="sidebar-links">
               <div className="link-row">
                 <a href="https://mitxela.com/projects/plotting">original by mitxela</a>
                 <span className="dot" />
-                <a href="https://github.com/msurguy/plotterfun-extended">source code</a>
+                <a href="https://github.com/parallaxmetrology/plotterfun-extended/tree/codex/notan-drainage">GitHub</a>
               </div>
             </div>
           </div>
         </aside>
 
-        <main className="canvas-stage">
-          <div className="canvas-shell">
-            <svg ref={svgRef} className="plot-output"></svg>
+        <main className={brushMode && notanMap ? 'canvas-stage brush-stage' : 'canvas-stage'}>
+          {brushMode && notanMap && <BrushPath key={notanMap.revision} map={notanMap} result={brush.result}
+            protectedStroke={protectedStroke} onRelease={()=>{brush.cancel();setKeptStroke(null);}}
+            onSearch={(points,previous,additionalPair)=>brush.search(points,notanEdit.amounts,spacing,previous,protectedStroke,additionalPair)} onCancel={brush.dismiss}
+            onKeep={candidate=>{
+              const mass = candidate.edits[0].mass;
+              const changes = candidate.changes;
+              if (protectedStroke || candidate.edits.length === 2) {
+                const prior = protectedStroke ? [...(protectedStroke.earlier ?? []), protectedStroke] : [];
+                const earlier = prior.map(({points,samples},i) => ({points,samples,...candidate.guardedFits[i]}));
+                setKeptStroke({revision:notanMap.revision, amounts:changes, earlier, points:brush.result.points,
+                  samples:brush.result.samples, alignment:candidate.alignment, score:candidate.after,
+                  path:candidate.path, count:candidate.count});
+              }
+              brush.cancel();
+              changeNotanEdit({mass,amounts:changes});
+            }}
+            pending={notanPending} originalDrawing={originalDrawing}
+            penColor={penColor} penWidth={penWidth} />}
+
+          <div style={hasPreview ? {display:'none'} : undefined} className={compareNotan ? 'notan-pair' : 'canvas-shell'}>
+            {compareNotan && <figure>
+              <figcaption>Original</figcaption>
+              <svg aria-label="Original drainage drawing" viewBox={originalDrawing ? `0 0 ${originalDrawing.width} ${originalDrawing.height}` : '0 0 1200 697'}>
+                {originalDrawing && <path d={originalDrawing.path} fill="none" stroke={penColor} strokeWidth={penWidth} strokeLinecap="round" strokeLinejoin="round" />}
+              </svg>
+            </figure>}
+            <div className={compareNotan ? 'notan-edited' : 'plot-container'}>
+              {compareNotan && <div className="notan-caption">Edited</div>}
+              <svg ref={svgRef} className="plot-output" aria-label="Output drawing"></svg>
+            </div>
           </div>
           <div id="msgbox" className="status-pill">
-            {msg}
+            {hasPreview ? `Original · ${originalDrawing?.count ?? 0} lines` : msg}
           </div>
         </main>
       </div>

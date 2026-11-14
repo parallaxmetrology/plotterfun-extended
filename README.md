@@ -6,7 +6,11 @@ It is a browser-first React/Vite evolution of the original Plotterfun by [mitxel
 
 ## Live
 
-Play with it live: https://makssurguy.com/labs/plotterfun-extended/
+[Open Notan Drainage at Parallax Metrology](https://parallaxmetrology.com/notan-drainage/) · [Four-edit sunflower SVG](examples/notan/sunflower-four-edits.svg) · [Jeong Seon drawings and worker benchmark](examples/notan/README.md)
+
+This fork adds a Notan mass editor and a brush for testing how well pen paths follow a stroke. Build the portfolio version with `npm ci` and `npm run build:notan`, then serve the contents of `dist/` at `/notan-drainage/`.
+
+[Maks Surguy’s upstream Plotterfun Extended](https://github.com/msurguy/plotterfun-extended) · [Upstream live app](https://makssurguy.com/labs/plotterfun-extended/)
 
 ## Examples
 
@@ -38,7 +42,7 @@ Play with it live: https://makssurguy.com/labs/plotterfun-extended/
 - This repository is an extended implementation (`@msurguy/plotterfun-extended`) with:
   - React-based interface
   - Vite + ES module workers
-  - Expanded algorithm set (40 workers)
+  - Expanded algorithm set (41 workers)
   - Color channel workflows (mono/CMYK/RGB/custom/plotterfun-color)
   - In-browser depth estimation and face-boundary support
   - Output sizing in physical units for plotting workflows
@@ -165,14 +169,14 @@ src/
     clipper-wrapper.js
     hatcher.js
   workers/
-    *.js (40 algorithms)
+    *.js (41 algorithms)
 docs/
   *.md (reference notes for vision/depth/spatial libs)
 ```
 
 ## Algorithms Included
 
-40 worker algorithms are currently wired into the app:
+41 worker algorithms are currently wired into the app:
 
 - Classic line styles:
   - Squiggle
@@ -209,6 +213,7 @@ docs/
   - Hatch Lattice
 - Generative/field/growth:
   - Flow Field
+  - [Notan drainage and the Jeong Seon drawings](examples/notan/README.md)
   - Concentric
   - Hex Grid
   - Starburst

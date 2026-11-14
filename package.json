@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:notan": "vite build --base=/notan-drainage/ && cp examples/notan/sunflower-four-edits.svg dist/",
     "preview": "vite preview"
   },
   "devDependencies": {

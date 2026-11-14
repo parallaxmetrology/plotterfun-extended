@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { estimateDepthMapFromCanvas, isDepthModelLoaded } from './lib/depth.js';
 import { OUTPUT_UNIT_TO_MM } from './constants.js';
 import {
@@ -51,6 +51,7 @@ const workerModules = {
   'hatchburst.js': () => new Worker(new URL('./workers/hatchburst.js', import.meta.url), { type: 'module' }),
   'hatchlattice.js': () => new Worker(new URL('./workers/hatchlattice.js', import.meta.url), { type: 'module' }),
   'flowfield.js': () => new Worker(new URL('./workers/flowfield.js', import.meta.url), { type: 'module' }),
+  'notan.js': () => new Worker(new URL('./workers/notan.js', import.meta.url), { type: 'module' }),
   'concentric.js': () => new Worker(new URL('./workers/concentric.js', import.meta.url), { type: 'module' }),
   'hexgrid.js': () => new Worker(new URL('./workers/hexgrid.js', import.meta.url), { type: 'module' }),
   'starburst.js': () => new Worker(new URL('./workers/starburst.js', import.meta.url), { type: 'module' }),
@@ -100,6 +101,11 @@ export function usePlotterController() {
   const paletteWorkerConfigRef = useRef(null);
   const activePaletteRef = useRef(null);
   const imageRevisionRef = useRef(0);
+  const [notanMap, setNotanMap] = useState(null);
+  const [originalDrawing, setOriginalDrawing] = useState(null);
+  const [notanEdit, setNotanEdit] = useState({ mass: null, amounts: {} });
+  const notanEditRef = useRef(notanEdit);
+  const [notanPending, setNotanPending] = useState(false);
   const processTokenRef = useRef(0);
   const faceBoundaryCacheRef = useRef({ revision: -1, polygon: null });
   const faceBoundaryMaskRef = useRef({ revision: -1, offset: 0, width: 0, height: 0, mask: null });
@@ -137,6 +143,10 @@ export function usePlotterController() {
 
   const markImageChanged = useCallback(() => {
     imageRevisionRef.current += 1;
+    setNotanMap(null);
+    setOriginalDrawing(null);
+    notanEditRef.current = { mass: null, amounts: {} };
+    setNotanEdit(notanEditRef.current);
     faceBoundaryCacheRef.current = { revision: -1, polygon: null };
     faceBoundaryMaskRef.current = { revision: -1, offset: 0, width: 0, height: 0, mask: null };
     depthCacheRef.current = { revision: -1, payload: null, promise: null };
@@ -535,6 +545,10 @@ export function usePlotterController() {
     const imageData = ctxRef.current.getImageData(0, 0, nextConfig.width, nextConfig.height);
     resetSVG(activePalette, nextConfig);
     const workerConfig = { ...nextConfig, depthData: depthPayload };
+    if (state.algorithm === 'notan.js' && state.colorMode === 'mono') {
+      workerConfig.notanEdit = { ...notanEditRef.current, revision: imageRevisionRef.current };
+      setNotanPending(true);
+    }
     paletteWorkerConfigRef.current = workerConfig;
 
     if (!activePalette || activePalette.length === 0 || state.colorMode === 'mono') {
@@ -566,6 +580,14 @@ export function usePlotterController() {
     sendToWorker([workerConfig, paletteChannels[paletteChannelIndexRef.current]]);
   }, [getDepthPayload, resetSVG, resolveActivePalette, sendToWorker]);
 
+  const changeNotanEdit = useCallback((change) => {
+    const current = notanEditRef.current;
+    const next = { ...current, ...change };
+    notanEditRef.current = next;
+    setNotanEdit(next);
+    if (next.amounts !== current.amounts) process();
+  }, [process]);
+
   const loadWorker = useCallback(
     (src) => {
       if (!workerModules[src]) {
@@ -581,12 +603,22 @@ export function usePlotterController() {
       workerSrcRef.current = src;
 
       const handleWorkerMessage = (msg) => {
+        if (msg.target !== myWorkerRef.current) return;
         const [type, data] = msg.data;
+        if (type === 'notan-map') {
+          if (data.revision === imageRevisionRef.current) setNotanMap(data);
+          return;
+        }
+        if (type === 'notan-original') {
+          setOriginalDrawing(data);
+          return;
+        }
 
         if (type === 'sliders') {
-          workerBusyRef.current = false;
           setBuffering(false);
+          // A replacement worker can announce its controls after processing has started.
           if (src === algoRef.current) return;
+          workerBusyRef.current = false;
           algoRef.current = src;
 
           const prevConfig = usePlotterStore.getState().config;
@@ -619,6 +651,7 @@ export function usePlotterController() {
         }
 
         if (type === 'svg-path') {
+          if (src === 'notan.js') setNotanPending(false);
           const paletteChannels = paletteChannelsRef.current;
           const palettePaths = palettePathsByChannelRef.current;
           const activePalette = activePaletteRef.current;
@@ -807,6 +840,28 @@ export function usePlotterController() {
     checkScroll();
     process();
   }, [checkScroll, markImageChanged, process, setImageSet]);
+
+  const getNotanImage = useCallback(() => {
+    const {width,height} = canvasRef.current;
+    return ctxRef.current.getImageData(0,0,width,height);
+  }, []);
+
+  const loadNotanExample = useCallback(async (name = 'jeong') => {
+    const image = new Image();
+    image.src = name === 'sunflower' ? new URL('../examples/notan/sunflower-preview.png', import.meta.url).href
+      : new URL('../examples/notan/jeong.png', import.meta.url).href;
+    try {
+      await image.decode();
+      imgRef.current = image;
+      scaleRef.current = 1;
+      offsetRef.current = [image.width / 2, image.height / 2];
+      setCanvasSize(image.width, image.height);
+      changeSize(image.width, image.height);
+      handleUseImage();
+    } catch {
+      setMsg('Could not load the example image.');
+    }
+  }, [changeSize, handleUseImage, setCanvasSize, setMsg]);
 
   const handleSnapshot = useCallback(() => {
     setImageSet(true);
@@ -1142,6 +1197,7 @@ export function usePlotterController() {
     handleSelectImage,
     handleFileInputChange,
     handleUseImage,
+    loadNotanExample, getNotanImage, notanMap, notanEdit, originalDrawing, changeNotanEdit, notanPending,
     handleSnapshot,
     handleToggleVideoPause,
     handleCanvasSizeChange,

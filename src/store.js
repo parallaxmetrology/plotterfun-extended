@@ -12,7 +12,7 @@ export const usePlotterStore = create((set) => ({
   outputSize: { width: 8, height: 6, unit: normalizeOutputUnit('in') },
   outputAutoSync: false,
   outputDpi: normalizeOutputDpi(96),
-  algorithm: 'squiggle.js',
+  algorithm: (new URLSearchParams(window.location.search).get('mode') === 'notan' || window.location.pathname === '/notan-drainage/') ? 'notan.js' : 'squiggle.js',
   buffering: false,
   msg: '',
   themeMode: getStoredTheme(),

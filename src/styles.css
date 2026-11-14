@@ -1247,3 +1247,43 @@ input[type="range"]:disabled {
   border-radius: 2px;
   transition: width 0.2s ease;
 }
+
+.plot-container { width: 100%; height: 100%; }
+.notan-pair { position: relative; z-index: 1; width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(6px, 1vw, 18px); }
+.notan-pair figure, .notan-edited { margin: 0; min-width: 0; display: flex; flex-direction: column; }
+.notan-pair figcaption, .notan-caption { color: var(--pf-text); font: 13px var(--pf-mono); margin-bottom: 8px; }
+.notan-pair svg { width: 100%; height: clamp(80px, 31vw, 54vh); background: white; border-radius: 5px; border: 1px solid var(--pf-canvas-output-border); }
+.notan-editor { display: grid; gap: 10px; }
+.notan-editor p { font-size: 13px; margin: 0; }
+.notan-editor canvas { display: block; width: 100%; height: auto; cursor: crosshair; }
+.notan-editor input[type=range] { width: 100%; accent-color: var(--pf-accent-cool); }
+.notan-scale { display: flex; align-items: center; justify-content: space-between; font: 12px var(--pf-mono); }
+.notan-scale button { background: transparent; border: none; color: var(--pf-text); text-decoration: underline; cursor: pointer; }
+
+.notan-edit-list { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.notan-edit-list .panel-subtitle { width: 100%; }
+.notan-edit-list [aria-pressed=true] { border-color: var(--pf-accent-cool); }
+.color-help { font-size: 12px; line-height: 1.4; color: var(--pf-text-muted); margin: 0; }
+
+.canvas-stage.brush-stage { display: flex; flex-direction: column; justify-content: flex-start; overflow: auto; gap: 20px; }
+.brush-stage > * { position: relative; z-index: 1; flex-shrink: 0; }
+.brush-stage .status-pill { position: static; align-self: flex-start; }
+.brush-work { display: grid; width: 100%; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; align-items: center; }
+.brush-source { position: relative; width: fit-content; max-width: 100%; margin: auto; }
+.brush-source canvas { display: block; max-width: 100%; max-height: 40vh; width: auto; height: auto; cursor: crosshair; touch-action: none; }
+.brush-guide { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.brush-details { display: grid; gap: 10px; justify-items: start; align-content: center; font-size: 13px; color: var(--pf-text); }
+.brush-details h3, .brush-details p { margin: 0; }
+.brush-work figure { margin: 0; min-width: 0; }
+.brush-work figcaption { font: 13px var(--pf-mono); margin: 0 0 8px; color: var(--pf-text); }
+.brush-work figure svg { width: 100%; height: clamp(90px,28vw,45vh); background: white; border-radius: 5px; }
+.brush-stage .notan-pair svg { height: clamp(90px,28vw,45vh); }
+@media (max-width:600px) {
+  .brush-work { gap: 8px; }
+  .brush-details { font-size: 12px; }
+}
+
+.brush-pair-comparison { grid-template-columns: repeat(6, minmax(0,1fr)); }
+.brush-pair-comparison .brush-source, .brush-pair-comparison .brush-details { grid-column: span 3; }
+.brush-pair-comparison figure { grid-column: span 2; align-self: start; }
+.brush-details button[aria-pressed=true] { border-color: var(--pf-accent-cool); }
